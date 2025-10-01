@@ -9,7 +9,9 @@ const PORT = process.env.PORT || 4000;
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
+      "http://localhost:5173/",
+      "http://localhost:5174/",
+      "http://localhost:4000",
       "http://localhost:3000",
       "http://127.0.0.1:5173",
     ],
@@ -34,29 +36,29 @@ const idToIndex = (req, res, next) => {
 };
 
 //get
-app.get("/", (req, res) => {
+app.get("/api/", (req, res) => {
   res.send("Hello welcome to notes home page");
 });
 
-app.get("/notes", (req, res) => {
+app.get("/api/notes", (req, res) => {
   res.json(notes);
 });
 
-app.get("/notes/:id", idToIndex, (req, res) => {
+app.get("/api/notes/:id", idToIndex, (req, res) => {
   res.json(notes[req.noteIndex]);
 });
 //post
-app.post("/notes", (req, res) => {
+app.post("/api/notes", (req, res) => {
   const newNote = req.body;
   if (!newNote.title || !newNote.content) {
     return res.status(400).send("Title and content are required");
   }
   newNote.id = notes.length ? notes[notes.length - 1].id + 1 : 1;
   notes.push(newNote);
-  res.status(201).json(newNote);
+  res.status(201).send("Note created successfully");
 });
 //put
-app.put("/notes/:id", idToIndex, (req, res) => {
+app.put("/api/notes/:id", idToIndex, (req, res) => {
   const updatedNote = req.body;
   if (!updatedNote.title || !updatedNote.content) {
     return res.status(400).send("Title and content are required");
@@ -70,8 +72,23 @@ app.put("/notes/:id", idToIndex, (req, res) => {
   notes[index] = { ...notes[index], ...updatedNote, id };
   res.status(200).json(updatedNote);
 });
+app.put("/api/notes/:id/pin", idToIndex, (req, res) => {
+  const updatedNote = req.body;
+  if (!updatedNote.title || !updatedNote.content) {
+    return res.status(400).send("Title and content are required");
+  }
+  const id = req.params.id - 0;
+  const index = req.
+  ;
+  if (index === -1) {
+    return res.status(404).send("Note not found");
+  }
+
+  notes[index] = { ...notes[index], ...updatedNote, id };
+  res.status(200).json(updatedNote);
+});
 //delete
-app.delete("/notes/:id", idToIndex, (req, res) => {
+app.delete("/api/notes/:id", idToIndex, (req, res) => {
   const note = notes[req.noteIndex];
   const index = req.noteIndex;
   notes.splice(index, 1);

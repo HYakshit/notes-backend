@@ -73,13 +73,14 @@ app.put("/api/notes/:id", idToIndex, (req, res) => {
   res.status(200).json(updatedNote);
 });
 app.put("/api/notes/:id/pin", idToIndex, (req, res) => {
-  const updatedNote = req.body;
-  if (!updatedNote.title || !updatedNote.content) {
-    return res.status(400).send("Title and content are required");
-  }
+  const index = req.noteIndex;
+  const newPinnedStatus = notes[index].pinned
+    ? { pinned: false }
+    : { pinned: true };
+  const updatedNote = { ...notes[req.noteIndex], ...newPinnedStatus };
+
   const id = req.params.id - 0;
-  const index = req.
-  ;
+
   if (index === -1) {
     return res.status(404).send("Note not found");
   }

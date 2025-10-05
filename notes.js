@@ -65,7 +65,7 @@ const notes = [
   {
     id: 8,
     title: "Recipe Idea",
-    content: "Try making homemade pasta with creamy mushroom sauce.",
+    content: "Try making homemade pasta with creamy mushroom sauce.Try making homemade pasta with creamy mushroom sauce.Try making homemade pasta with creamy mushroom sauce.",
     category: "Food",
     date: "2025-09-22",
     pinned: false,

@@ -1,33 +1,20 @@
 import { Router } from "express";
 import notesService from "../services/notesService.js";
+import { ensureAuthenticated, getUserId } from "../middleware/userWare.js";
 
 const notesRouter = Router();
 
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated && req.isAuthenticated()) {
-    return next();
-  }
-  return res.status(401).json({ message: "Unauthorized" });
-}
 
-// Middleware to get user ID from session
-function getUserId(req, res, next) {
-  if (req.user && req.user.id) {
-    req.userId = req.user.id;
-    return next();
-  }
-  return res.status(401).json({ message: "User ID not found in session" });
-}
 
-// Session info endpoint (for debugging)
-notesRouter.get("/", (req, res) => {
-  res.json({
-    message: "session data",
-    session: req.session,
-    sessionId: req.session.id,
-    user: req.user || null,
-  });
-});
+// // Session info endpoint (for debugging)
+// notesRouter.get("/", (req, res) => {
+//   res.json({
+//     message: "session data",
+//     session: req.session,
+//     sessionId: req.session.id,
+//     user: req.user || null,
+//   });
+// });
 
 // Get all notes for the authenticated user
 notesRouter.get("/notes", ensureAuthenticated, getUserId, async (req, res) => {

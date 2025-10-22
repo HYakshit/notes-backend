@@ -15,7 +15,7 @@ userRouter.post("/register", async (req, res) => {
         .json({ message: "Email and password are required" });
     }
 
-    const { data, error } = await supabaseclear.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {

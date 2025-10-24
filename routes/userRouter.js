@@ -111,7 +111,7 @@ userRouter.post("/logout", async (req, res) => {
   try {
     await supabase.auth.signOut();
 
-    req.logout && req.logout(() => {});
+    // req.logout && req.logout(() => {});
     req.session?.destroy(() => {
       res.clearCookie("notesapp.sid");
       res.json({ message: "Logged out successfully" });

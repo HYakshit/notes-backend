@@ -4,7 +4,6 @@ import supabase from "../config/supabase.js";
 
 const userRouter = Router();
 
-// User Registration
 userRouter.post("/register", async (req, res) => {
   try {
     const { email, password, displayName } = req.body;
@@ -12,7 +11,7 @@ userRouter.post("/register", async (req, res) => {
     if (!email || !password) {
       return res
         .status(400)
-        .json({ message: "Email and password are required" });
+        .json({ message: "Email and password are required." });
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -23,7 +22,16 @@ userRouter.post("/register", async (req, res) => {
       },
     });
 
-    if (error) return res.status(400).json({ message: error.message });
+    if (error) {
+      // Supabase returns detailed error messages, handle them gracefully
+      if (error.message.includes("User already registered")) {
+        return res
+          .status(409)
+          .json({ message: "User already registered with this email." });
+      }
+
+      return res.status(400).json({ message: error.message });
+    }
 
     res.status(201).json({
       message:
@@ -31,19 +39,32 @@ userRouter.post("/register", async (req, res) => {
       user: data.user,
     });
   } catch (error) {
-    res.status(500).json({ message: "Internal server error",error: error.message});
+    console.error("Register Error:", error.message);
+    res.status(500).json({
+      message: "Internal server error during registration.",
+      error: error.message,
+    });
   }
 });
 
-// User Login
 userRouter.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
-    if (err) return next(err);
-    if (!user) return res.status(401).json(info);
+    if (err)
+      return res
+        .status(500)
+        .json({ message: "Login error", error: err.message });
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: info?.message || "Invalid credentials" });
+    }
 
     req.logIn(user, (err) => {
-      if (err) return next(err);
-      return res.json(user);
+      if (err)
+        return res
+          .status(500)
+          .json({ message: "Login failed", error: err.message });
+      return res.status(200).json({ message: "Login successful", user });
     });
   })(req, res, next);
 });
@@ -51,7 +72,7 @@ userRouter.post("/login", (req, res, next) => {
 //  Forgot Password
 userRouter.post("/forgot-password", async (req, res) => {
   try {
-     const email = req.body?.email;
+    const email = req.body?.email;
 
     if (!email) return res.status(400).json({ message: "Email is required" });
 

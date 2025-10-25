@@ -64,7 +64,7 @@ userRouter.post("/login", (req, res, next) => {
         return res
           .status(500)
           .json({ message: "Login failed", error: err.message });
-      return res.status(200).json({ message: "Login successful", user });
+      return res.status(200).json(user);
     });
   })(req, res, next);
 });

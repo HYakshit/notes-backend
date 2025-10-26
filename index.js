@@ -52,7 +52,7 @@ app.use(passport.initialize());
 app.use(passport.session()); // attaches user obj to req if logged in
 
 // Health check endpoint for production monitoring
-app.get("/health", (req, res) => {
+app.get("/api/health", (req, res) => {
   res.status(200).json({
     session: req.session,
     status: "OK",

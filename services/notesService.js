@@ -1,16 +1,16 @@
-import { supabase } from "../config/supabase.js";
+import { supabaseAdmin } from "../config/supabase.js";
 
 class NotesService {
   // Get all notes for a user
   async getUserNotes(userId) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .select("*")
         .eq("user_id", userId)
         .order("pinned", { ascending: false })
         .order("created_at", { ascending: false });
-
+      console.log("getUserNotes data:", data);
       if (error) {
         throw new Error(`Failed to fetch notes: ${error.message}`);
       }
@@ -24,7 +24,7 @@ class NotesService {
   // Get a specific note by ID
   async getNoteById(noteId, userId) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .select("*")
         .eq("id", noteId)
@@ -63,7 +63,7 @@ class NotesService {
         date: new Date().toISOString().split("T")[0], // YYYY-MM-DD format
       };
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .insert([newNote])
         .select()
@@ -99,7 +99,7 @@ class NotesService {
       if (tags !== undefined) updateFields.tags = tags;
       if (pinned !== undefined) updateFields.pinned = pinned;
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .update(updateFields)
         .eq("id", noteId)
@@ -126,7 +126,7 @@ class NotesService {
       // First get the current note to check if it exists and get current pin status
       const currentNote = await this.getNoteById(noteId, userId);
 
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .update({
           pinned: !currentNote.pinned,
@@ -150,7 +150,7 @@ class NotesService {
   // Delete a note
   async deleteNote(noteId, userId) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .delete()
         .eq("id", noteId)
@@ -174,7 +174,7 @@ class NotesService {
   // Search notes by title or content
   async searchNotes(userId, searchTerm) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .select("*")
         .eq("user_id", userId)
@@ -195,7 +195,7 @@ class NotesService {
   // Get notes by category
   async getNotesByCategory(userId, category) {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from("notes")
         .select("*")
         .eq("user_id", userId)

@@ -20,6 +20,7 @@ const notesRouter = Router();
 notesRouter.get("/notes", ensureAuthenticated, getUserId, async (req, res) => {
   try {
     const notes = await notesService.getUserNotes(req.userId);
+   console.log("notes",notes);
     res.json(notes);
   } catch (error) {
     console.error("Error fetching notes:", error);

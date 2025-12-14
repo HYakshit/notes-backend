@@ -35,7 +35,7 @@ userRouter.post("/register", async (req, res) => {
 
     res.status(201).json({
       message:
-        "User registered successfully. Please check your email to confirm your account.",
+        "User registered successfully. Please login.",
       user: data.user,
     });
   } catch (error) {
@@ -69,6 +69,52 @@ userRouter.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
+
+// Google Login (Session Sync)
+userRouter.post("/login/google", async (req, res, next) => {
+  const { access_token } = req.body;
+  console.log("Google login attempt with token:", access_token ? "PRESENT" : "MISSING");
+
+  if (!access_token) {
+    return res.status(400).json({ message: "Access token required" });
+  }
+
+  try {
+    const { data, error } = await supabase.auth.getUser(access_token);
+
+    if (error || !data.user) {
+      console.error("Supabase getUser failed:", error);
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    const user = data.user;
+    console.log("Supabase user found:", user.id, user.email);
+
+    // Use passport to establish session
+    req.logIn(user, (err) => {
+      if (err) {
+        console.error("Passport logIn failed:", err);
+        return res.status(500).json({ message: "Session creation failed" });
+      }
+
+      console.log("Passport logIn successful for:", user.id);
+
+      // Explicitly save session to ensure cookie is set
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save failed:", err);
+          return res.status(500).json({ message: "Session save failed" });
+        }
+        console.log("Session saved successfully");
+        return res.status(200).json(user);
+      });
+    });
+  } catch (err) {
+    console.error("Google login exception:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 //  Forgot Password
 userRouter.post("/forgot-password", async (req, res) => {
   try {
@@ -77,9 +123,8 @@ userRouter.post("/forgot-password", async (req, res) => {
     if (!email) return res.status(400).json({ message: "Email is required" });
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${
-        process.env.FRONTEND_URL || process.env.PRODUCTION_FRONTEND_URL
-      }/reset-password`,
+      redirectTo: `${process.env.FRONTEND_URL || process.env.PRODUCTION_FRONTEND_URL
+        }/reset-password`,
     });
 
     if (error) return res.status(400).json({ message: error.message });

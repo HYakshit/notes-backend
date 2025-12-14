@@ -1,6 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { supabase } from "../config/supabase.js";
+import { supabase, supabaseAdmin } from "../config/supabase.js";
 
 // Configure how user data is stored in the session
 passport.serializeUser((user, done) => {
@@ -9,16 +9,26 @@ passport.serializeUser((user, done) => {
 
 passport.deserializeUser(async (id, done) => {
   try {
-    const { data: user, error } = await supabase.auth.getUser();
+    console.log("Deserializing user ID:", id);
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(id);
 
-    if (error || !user.user) {
+    if (error) {
+      console.error("Error fetching user in deserializeUser:", error);
+      return done(new Error("User not found"));
+    }
+
+    const user = data?.user;
+
+    if (!user) {
+      console.error("User not found in deserializeUser (no data.user)");
       return done(new Error("User not found"));
     }
 
     // Return user data without sensitive information
-    const { password, ...safeUser } = user.user;
+    const { password, ...safeUser } = user;
     done(null, safeUser);
   } catch (error) {
+    console.error("Exception in deserializeUser:", error);
     done(error);
   }
 });

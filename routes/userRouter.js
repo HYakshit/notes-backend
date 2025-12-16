@@ -177,10 +177,26 @@ userRouter.post("/logout", async (req, res) => {
   try {
     await supabase.auth.signOut();
 
-    // req.logout && req.logout(() => {});
-    req.session?.destroy(() => {
-      res.clearCookie("notesapp.sid");
-      res.json({ message: "Logged out successfully" });
+    req.logout((err) => {
+      if (err) {
+        console.error("Error during passport logout:", err);
+        return res.status(500).json({ message: "Error during logout" });
+      }
+
+      req.session.destroy((err) => {
+        if (err) {
+          console.error("Error destroying session:", err);
+          return res.status(500).json({ message: "Error destroying session" });
+        }
+
+        res.clearCookie("notesapp.sid", {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+        });
+        res.json({ message: "Logged out successfully" });
+      });
     });
   } catch (error) {
     res.status(500).json({ message: "Error during logout" });
